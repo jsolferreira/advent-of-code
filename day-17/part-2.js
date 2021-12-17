@@ -1,6 +1,6 @@
 const input = 'target area: x=14..50, y=-267..-225';
 
-const targetArea = input.split(': ')[1].split(', ').map(x => x.split('=')[1].split('..').map(Number));
+const [[MIN_TARGET_X, MAX_TARGET_X], [MIN_TARGET_Y, MAX_TARGET_Y]] = input.split(': ')[1].split(', ').map(x => x.split('=')[1].split('..').map(Number));
 
 let highY = 0;
 
@@ -8,19 +8,17 @@ let breakX = false;
 let count = 0;
 let i;
 
-for ( i = 0; i <= targetArea[0][1] || !breakX; i++) {
+for (i = 0; i <= MAX_TARGET_X || !breakX; i++) {
     let breakY = false;
-    for (let j = targetArea[1][0]; j <= Math.abs(targetArea[1][0]) || !breakY; j++) {
-        const { result, lastPosition, heighestY } = launch([i, j]);
-        console.log([i, j], lastPosition, result);
+    for (let j = MIN_TARGET_Y; j <= Math.abs(MIN_TARGET_Y) || !breakY; j++) {
+        const { result, lastPosition } = launch([i, j]);
 
         if (result) {
             count++;
         }
 
-        breakX = lastPosition[0] > targetArea[0][1];
-        breakY = (breakX || lastPosition[1] < targetArea[1][0]);
-        console.log();
+        breakX = lastPosition[0] > MAX_TARGET_X;
+        breakY = (breakX || lastPosition[1] < MIN_TARGET_Y);
     }
 }
 
@@ -37,9 +35,9 @@ function launch(velocity) {
             heighestY = position[1];
         }
 
-        if (targetArea[0][0] <= position[0] && position[0] <= targetArea[0][1] && targetArea[1][0] <= position[1] && position[1] <= targetArea[1][1]) {
+        if (MIN_TARGET_X <= position[0] && position[0] <= MAX_TARGET_X && MIN_TARGET_Y <= position[1] && position[1] <= MAX_TARGET_Y) {
             return { result: true, lastPosition: position, heighestY };
-        } else if (position[0] > targetArea[0][1] || position[1] < targetArea[1][0]) {
+        } else if (position[0] > MAX_TARGET_X || position[1] < MIN_TARGET_Y) {
             return { result: false, lastPosition: position, heighestY };
         }
 
