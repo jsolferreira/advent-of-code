@@ -99,56 +99,27 @@ const input = `44743789392945619896298969949834379789856995962535255323146713571
 4962689198187192592599439628128214183938152641919458516294432194147333651495386497911639332152979188
 8798649298935671297823969873452881511219118163995469811846217496897676246893511198571281879831529181`;
 
-const dummyInput = `1163751742
-1381373672
-2136511328
-3694931569
-7463417111
-1319128137
-1359912421
-3125421639
-1293138521
-2311944581`;
+let matrix = input.split('\n').map(x => x.split('').map(Number));
 
-const dummierInput = `16
-11
-21`;
-
-const matrix = input.split('\n').map(x => x.split('').map(Number));
+matrix = matrix.map(x => x.map(y => ({ weight: y, visited: false })));
 
 let currentVertex = '0,0';
 let finalVertex = `${matrix.length - 1},${matrix[0].length - 1}`;
 
 const shortestDistance = {
-    [currentVertex]: {
-        weight: 0,
-        last: currentVertex
-    }
+    [currentVertex]: 0
 };
-const visitedVertexes = [];
-let unvisitedVertexes = [];
+const knownUnvisitedVertexes = [currentVertex];
 
-for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix.length; j++) {
-        unvisitedVertexes.push(`${i},${j}`);
-    }
-}
-
-let i = 10;
-
-while (unvisitedVertexes.length > 0) {
+while (knownUnvisitedVertexes.length > 0) {
     const [x, y] = currentVertex.split(',').map(Number);
-    const topVertexWeight = x > 0 ? matrix[x - 1][y] : undefined;
-    const rightVertexWeight = y + 1 < matrix[x].length ? matrix[x][y + 1] : undefined;
-    const bottomVertexWeight = x + 1 < matrix.length ? matrix[x + 1][y] : undefined;
-    const leftVertexWeight = y > 0 ? matrix[x][y - 1] : undefined;
 
-    addToShortestDistance(currentVertex, `${x - 1},${y}`, topVertexWeight);
-    addToShortestDistance(currentVertex, `${x},${y + 1}`, rightVertexWeight);
-    addToShortestDistance(currentVertex, `${x + 1},${y}`, bottomVertexWeight);
-    addToShortestDistance(currentVertex, `${x},${y - 1}`, leftVertexWeight);
+    if (x > 0) addToShortestDistance(currentVertex, `${x - 1},${y}`, matrix[x - 1][y]); // Top
+    if (y + 1 < matrix[x].length) addToShortestDistance(currentVertex, `${x},${y + 1}`, matrix[x][y + 1]); // Left
+    if (x + 1 < matrix.length) addToShortestDistance(currentVertex, `${x + 1},${y}`, matrix[x + 1][y]); // Bottom
+    if (y > 0) addToShortestDistance(currentVertex, `${x},${y - 1}`, matrix[x][y - 1]); // Right
 
-    currentVertex = nextVertex(`${x},${y}`);
+    currentVertex = nextVertex(`${x},${y}`, matrix[x][y]);
 }
 
 console.log('Result: ', shortestDistance[finalVertex]);
@@ -162,31 +133,29 @@ function printShortestDistance() {
     }
 }
 
-function addToShortestDistance(currentVertex, vertex, vertexWeight) {
-    if (vertexWeight && !visitedVertexes.includes(vertex) && (!shortestDistance[vertex] || shortestDistance[currentVertex].weight + vertexWeight < shortestDistance[vertex].weight)) {
-        shortestDistance[vertex] = {
-            weight: shortestDistance[currentVertex].weight + vertexWeight,
-            last: currentVertex
-        }
+function addToShortestDistance(currentVertex, vertex, { weight, visited }) {
+    if (!visited && (!shortestDistance[vertex] || shortestDistance[currentVertex] + weight < shortestDistance[vertex])) {
+        shortestDistance[vertex] = shortestDistance[currentVertex] + weight
+        knownUnvisitedVertexes.push(vertex);
     }
 }
 
-function nextVertex(currentVertex) {
+function nextVertex(currentVertex, v) {
     let minimum;
     let nextVertex;
+    let index;
 
-    const knownVertexes = unvisitedVertexes.filter(vertex => currentVertex !== vertex && shortestDistance[vertex]);
-
-    for (const vertex of knownVertexes) {
-        if (minimum == undefined || shortestDistance[vertex].weight < minimum) {
-            minimum = shortestDistance[vertex].weight;
+    for (let i = 0; i < knownUnvisitedVertexes.length; i++) {
+        vertex = knownUnvisitedVertexes[i];
+        if (currentVertex !== vertex && shortestDistance[vertex] && (minimum == undefined || shortestDistance[vertex] < minimum)) {
+            minimum = shortestDistance[vertex];
             nextVertex = vertex;
+            index = i;
         }
     }
 
-    visitedVertexes.push(currentVertex);
-    const index = unvisitedVertexes.findIndex(vertex => vertex === currentVertex);
-    unvisitedVertexes.splice(index, 1);
+    v.visited = true;
+    knownUnvisitedVertexes.splice(index, 1);
 
     return nextVertex;
 }
