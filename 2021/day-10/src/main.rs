@@ -29,15 +29,12 @@ fn part_one(input: &Vec<String>) -> u32 {
             if pair_map.contains_key(&c) {
                 stack.push(*pair_map.get(&c).unwrap())
             } else {
-                let pair = stack.pop();
-
-                let f = match pair {
-                    Some(v) => v == c,
+                let f = match stack.pop() {
+                    Some(pair) => pair == c,
                     None => false,
                 };
 
                 if !f {
-                    println!("FALSE {}", c);
                     total_illegal_points += *illegal_points.get(&c).unwrap();
                 }
             }
@@ -55,14 +52,21 @@ fn part_two(input: &Vec<String>) -> u64 {
 
     let mut tot_scores: Vec<u64> = Vec::new();
 
-    for line in input {
+    'outer: for line in input {
         let mut total_illegal_points = 0;
         let mut stack: Vec<char> = Vec::new();
         for c in line.chars() {
             if pair_map.contains_key(&c) {
                 stack.push(*pair_map.get(&c).unwrap())
             } else {
-                stack.pop();
+                let f = match stack.pop() {
+                    Some(pair) => c == pair,
+                    None => false,
+                };
+
+                if !f {
+                    continue 'outer;
+                }
             }
         }
 
@@ -76,8 +80,6 @@ fn part_two(input: &Vec<String>) -> u64 {
     }
 
     tot_scores.sort();
-
-    println!("{:?} {}", tot_scores, tot_scores.len() / 2);
 
     tot_scores[tot_scores.len() / 2]
 }
