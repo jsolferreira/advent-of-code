@@ -1,10 +1,10 @@
-use std::{fs, time::Instant};
+use std::fs;
 
 fn main() {
     let mut input = parse_input();
 
     println!("Part one: {}", part_one(&mut input));
-    println!("Part two: {}", part_two(&input));
+    println!("Part two: {}", part_two(&mut input));
 }
 
 fn parse_input() -> Vec<u32> {
